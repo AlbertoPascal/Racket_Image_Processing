@@ -5,15 +5,15 @@
 |#
     (write "I got ")
     (write character)
-    1
+    "hola"
 )
 (define (prep-list sentence binary-arr)
 ;This function will receive a word or sentence, convert it into a list of characters and send char by char to its binary conversion.
     
     (if (> (string-length sentence) 0)
-        ;(prep-list (cdr(sentece)) , (append binary-arr, list((char-bin (car((string->list sentence))) ) ) ) )
-        (prep-list (process (cdr (string->list sentence))) (append binary-arr (list (char-bin (car (string->list sentence))))));(prep-list (cdr sentence) (list (append '(1) binary-arr)) )
-        ;(prep-list (process (cdr (string->list sentence))) (append binary-arr (list (char-bin (car(string->list "hola crayola"))))) )
+        ;If I still have letters, I will return the letter's binary component.
+        (prep-list (process (cdr (string->list sentence))) (append binary-arr (list (char-bin (car (string->list sentence))))))
+        ;If I am out of letters, I need to return my array of "bits"
         binary-arr
         
     )
