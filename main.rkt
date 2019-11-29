@@ -9,7 +9,7 @@
 )
 (define (prep-list sentence binary-arr)
 ;This function will receive a word or sentence, convert it into a list of characters and send char by char to its binary conversion.
-    
+;Function returns an array of strings containing the binary representation of each letter  
     (if (> (string-length sentence) 0)
         ;If I still have letters, I will return the letter's binary component.
         (prep-list (process (cdr (string->list sentence))) (append binary-arr (list (char-bin (car (string->list sentence))))))
