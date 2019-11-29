@@ -1,15 +1,18 @@
 
-(define (char-bin charcater)
+(define (char-bin character)
 #|
  this function will receive a character such as "A", convert it to its corresponding ascii "65" and then return its binary equivalent.
 |#
+    (write "I got ")
+    (write character)
     1
 )
 (define (prep-list sentence binary-arr)
 ;This function will receive a word or sentence, convert it into a list of characters and send char by char to its binary conversion.
+    
     (if (> (string-length sentence) 0)
         ;(prep-list (cdr(sentece)) , (append binary-arr, list((char-bin (car((string->list sentence))) ) ) ) )
-        (prep-list (cdr sentence) (list (append '(1) binary-arr)) )
+        (prep-list (process (cdr (string->list sentence))) (append binary-arr (list (char-bin (car (string->list sentence))))));(prep-list (cdr sentence) (list (append '(1) binary-arr)) )
         ;(prep-list (process (cdr (string->list sentence))) (append binary-arr (list (char-bin (car(string->list "hola crayola"))))) )
         binary-arr
         
