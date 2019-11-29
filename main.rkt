@@ -1,8 +1,6 @@
 
 (define (char-bin character)
-#|
- this function will receive a character such as "A", convert it to its corresponding ascii "65" and then return its binary equivalent.
-|#
+ ;this function will receive a character such as "A", convert it to its corresponding ascii "65" and then return its binary equivalent.
     ;(write (DecToBin (char->integer character)))
     (DecToBin (char->integer character))
 )
