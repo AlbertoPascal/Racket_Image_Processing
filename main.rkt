@@ -12,6 +12,7 @@
         (display "\n")
         (write pixels)
         (close-input-port in)
+        pixels
     ;Idea: leer los parámetros de la ppm image para saber cuantos renglones y columnas hay. A partir de
     ;ahí, hacer tercias y guardar esas listas de tercias dentro de otra lista para representar la lista de pixeles.
     ;(append (read-line in)
@@ -84,7 +85,6 @@
         )
     )
 )
-
 (define (DecToBin num)
     (if (< num 2)
         (number->string num); if number is no longer divisible, I return the number. 
@@ -94,3 +94,19 @@
     )
 
 )
+(define (convert-pixels-to-bin pixels new_pixels)
+    (if (> (length pixels) 0)
+        (convert-pixels-to-bin (cdr pixels) (append new_pixels (list (convert-list-to-bin (car pixels) '()))))
+        ;(convert-pixles-to-bin (cdr pixles) (append new_pixels (convert-list-to-bin (car pixels) '())))
+        new_pixels
+    )
+)
+
+(define (convert-list-to-bin elem_list new_list)
+    (if (> (length elem_list) 0)
+        ;(cdr elem_list)
+        (convert-list-to-bin (cdr elem_list) (append new_list (list (DecToBin (car elem_list)))))
+        new_list
+    )
+)
+
