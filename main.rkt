@@ -23,14 +23,14 @@
 )
 
 (define (Join-chars lst)
-  (apply string-append                   ; append all the strings
-         (map (lambda (e)                ; create a list of strings
-                (if (char? e)            ; if it's a char
-                    (string e)           ; convert it to string
+  (apply string-append ; Here we will start appending all of our letters
+         (map (lambda (e) ; I will receive each "char"
+                (if (char? e) ; if it's a char already I convert it to string
+                    (string e) ; This is for when I type in numbers, I still make them string
                     (number->string e)
                 )
-               ) ; same if it's a number
-            lst
+               ) 
+            lst ;I will apply this to every char on my list
         )
     )
 )
