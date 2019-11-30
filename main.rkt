@@ -1,4 +1,9 @@
-
+(define (read-image img-name)
+    (define in (open-input-file img-name))
+    ;Idea: leer los parámetros de la ppm image para saber cuantos renglones y columnas hay. A partir de
+    ;ahí, hacer tercias y guardar esas listas de tercias dentro de otra lista para representar la lista de pixeles.
+    ;(append (read-line in)
+)
 (define (char-bin character)
  ;this function will receive a character such as "A", convert it to its corresponding ascii "65" and then return its binary equivalent.
     ;(write (DecToBin (char->integer character)))
