@@ -1,8 +1,58 @@
 (define (read-image img-name)
-    (define in (open-input-file img-name))
+    (let*
+        (
+            [in (open-input-file img-name)] ;we will define our input file reader
+            [img_type (read-image-type in)] ; we store the image_type
+            [mat_size (read-matrix-size in)] ; we store x and y coordinates from our matrix size
+            [pixels (read-all-pixels in (* (car mat_size) (car (cdr mat_size))) '())]
+        )
+        (write img_type)
+        (display "\n")
+        (write mat_size)
+        (display "\n")
+        (write pixels)
+        (close-input-port in)
     ;Idea: leer los parámetros de la ppm image para saber cuantos renglones y columnas hay. A partir de
     ;ahí, hacer tercias y guardar esas listas de tercias dentro de otra lista para representar la lista de pixeles.
     ;(append (read-line in)
+    )
+)
+(define (testlet var) ; this is just to test the value a let function returns. 
+    (let*
+       (
+        [x 1]
+        [y 3]
+        [z (+ x y)]
+        )
+        (+ x y)
+    )
+    
+)
+(define (read-image-type input) ;This method returns the image type. For example, P6
+    (read input)
+)
+(define (read-matrix-size input); This method returns the matrix size. For example,  '(4 4)
+    (append (list (read input)) (list (read input)))
+)
+(define (read-all-pixels input number_of_iter pixel_list) ;This method returns a list of lists containing pixels. 
+    (if (> number_of_iter 0) ;If I still have pixels to read
+        (read-all-pixels input (- number_of_iter 1) (append pixel_list (read-pixel input))) ;I keep reading
+        pixel_list ; Else, I return my pixel list. Example '( (0 0 255) (240 130 244))
+    )
+)
+;This method will extract all three R G B for a single pixel (next in file)
+(define (read-pixel input) 
+    (let*
+        (
+            [read-R (read input)]
+            [read-G (read input)]
+            [read-B (read input)]
+        )
+        (if (eof-object? read-R)
+            pixel_list
+            (list (append (list read-R) (list read-G) (list read-B)))
+        )
+    )
 )
 (define (char-bin character)
  ;this function will receive a character such as "A", convert it to its corresponding ascii "65" and then return its binary equivalent.
@@ -19,7 +69,7 @@
         binary-arr
         
     )
-    
+
 )
 
 (define (Join-chars lst)
