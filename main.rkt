@@ -20,7 +20,60 @@
     ;(append (read-line in)
     )
 )
+(define (decode-msg img-input msg)
+    (let*
+        (
+            [img_data (read-image img-input)]
+            [img_type (car img_data)]
+            [mat_size (car (cdr img_data))]
+            [max_size (caddr img_data)]
+            [pixel_arr (car (cdddr img_data))]
+            [char_arr (convert-ascii-char (return-pixels-toDec (remake-all-letters (get_last_bits pixel_arr '()) '()) '()) '())]
+            [msg_length (string->number (Join-chars (list (car char_arr))))]
+            
+        )
+        (decode_list_msg (trim_decoding_list char_arr) msg_length "")
+        
+    )
+)
+(define (convert-ascii-char ascii_arr char_arr)
+    (if (> (length ascii_arr) 0)
+        (convert-ascii-char (cdr ascii_arr) (append char_arr (list (integer->char (car ascii_arr)))))
+        char_arr
+    )
+)
+(define (trim_decoding_list char_list)
+    (if (string=? (Join-chars (list (car char_list)) ) " ")
+        (cdr char_list)
+        (trim_decoding_list (cdr char_list))
+    )
+)
+(define (decode_list_msg full_char_list msg_length secret_msg)
+    (if (> msg_length 0)
+        (decode_list_msg (cdr full_char_list) (- msg_length 1) (string-append secret_msg (Join-chars (list (car full_char_list)))))
+        secret_msg
+    )
+)
+(define (get_last_bits pixel_arr new_pixel_arr)
+    (if (> (length pixel_arr) 0) 
+        (get_last_bits (cdr pixel_arr) (append new_pixel_arr (list(Join-chars (list (car (cdddr (cddddr (string->list (car pixel_arr))) )))))))
+        new_pixel_arr
+    )
+)
+(define (remake-all-letters last_bit_arr letter_arr)
+    (if (> (length last_bit_arr) 0)
+        (remake-all-letters (cddddr (cddddr last_bit_arr)) (append letter_arr (list (remake-letter last_bit_arr "" 0))))
+        letter_arr
+    )
 
+)
+
+(define (remake-letter last_bit_arr letter curr_count)
+    (if (< curr_count 8)
+        (remake-letter (cdr last_bit_arr) (string-append letter  (car last_bit_arr)) (+ curr_count 1))
+        letter
+    )
+)
 (define (encode-msg msg img-name output_filename)
     (let*
         (
