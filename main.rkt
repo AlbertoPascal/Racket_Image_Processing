@@ -34,7 +34,12 @@
             [msg_length (string->number (Join-chars (list (car char_arr))))]
             
         )
-        (decode_list_msg (trim_decoding_list char_arr) msg_length "")
+        
+        (if (char-iso-control? (car char_arr))
+            (write "This image has no hidden messages to decode")
+            (decode_list_msg (trim_decoding_list char_arr) msg_length "")
+        )
+        
         
     )
 )
@@ -42,6 +47,12 @@
     (if (> (length ascii_arr) 0)
         (convert-ascii-char (cdr ascii_arr) (append char_arr (list (integer->char (car ascii_arr)))))
         char_arr
+    )
+)
+(define (get_msg_length char_arr len)
+    (if (or (empty? char_arr) (string=? (Join-chars (list (car char_arr)) ) " "))
+        (Join-chars len)
+        (get_msg_length (cdr char_arr) (string-append len (Join-chars(list (car char_arr)))))
     )
 )
 (define (trim_decoding_list char_list)
