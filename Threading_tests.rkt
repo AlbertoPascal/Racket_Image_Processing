@@ -12,7 +12,11 @@
                         (sleep (random))
                         (semaphore-wait semaphore-out)
                         ; Critical section
-                        (printf "Thread: ~a | Counter: ~a\n" name n)
+                        (write name)
+                        (display "\n")
+                        (rand-sum (random))
+                        (display "\n")
+                        ;(printf "Thread: ~a | Counter: ~a\n" name n)
                         ;(printf "~a_~a " name n)
                         (semaphore-post semaphore-out)
                         (loop (+ n 1)))
@@ -20,6 +24,9 @@
                     (printf "Thread ~a finishing\n" name))))))
 
 ; Main function to test
+(define (rand-sum num)
+    (write (* num num))
+)
 (define (main)
     (printf "MAIN THREAD START\n")
     (define threads (map make-thread '(Thread_A Thread_B Thread_C)))
