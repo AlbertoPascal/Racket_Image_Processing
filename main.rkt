@@ -28,18 +28,20 @@
             [img_type (car img_data)]
             [mat_size (car (cdr img_data))]
             [pixel_arr (car (cdr (cdr img_data)))]
+            [msg_length (* (length msg_arr) 8)]
+            
         )
-        (write msg_arr)
-        (display "\n")
-        (write img_type)
-        (display "\n")
-        (write mat_size)
-        (display "\n")
-        (write pixel_arr)
-        (display "\n")
+        ;(write msg_arr)
+        ;(display "\n")
+        ;(write img_type)
+        ;(display "\n")
+        ;(write mat_size)
+        ;(display "\n")
+        ;(write pixel_arr)
+        ;(display "\n")
 
         (if (valid-encryption msg_arr pixel_arr)
-            (write "I can encrypt this message")
+            (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()))
             (write "message is too long for this image. Please try with a larger image")
         )
 
@@ -49,8 +51,16 @@
 (define (encrypt-message msg_arr pixel_arr new_pixel_arr)
     (if (> (length msg_arr) 0)
         ;send next letter to encryption. 
-        1
-        1
+
+    )
+)
+(define (letter-encryption letter pixel_arr)
+
+)
+(define (trim_all_pixels pixel_arr needed_channels new_pixel_arr)
+    (if (> needed_channels 0)
+        (trim_all_pixels (cdr pixel_arr) (- needed_channels 1) (append new_pixel_arr (list (Join-chars (get_trimmed_pixel (string->list(car pixel_arr)))))))
+        new_pixel_arr
     )
 )
 (define (get_trimmed_pixel pixel)
@@ -62,7 +72,7 @@
 (define (add_next_bit char_bit trimmed_pixel)
     (string-append trimmed_pixel char_bit)
 )
-()
+
 ; (add_next_bit "1" (Join-chars (get_trimmed_pixel (string->list "100"))))
 
 (define (valid-encryption msg_arr pixel_arr)
