@@ -1,3 +1,5 @@
+;NOTE: MAIN FUNCTIONS ARE (encode-msg msg input-ppm output-ppm) and (decode-msg "input-ppm" "")
+
 (define (read-image img-name)
     (let*
         (
