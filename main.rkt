@@ -200,15 +200,15 @@
             [writtable-pixels (map (lambda (e) (number->string e)) (return-pixels-toDec pixel_arr '()))]
 
         )
-        ;(write pixel_arr)
-        ;(display "\n")
-        ;(display img-type out)
-        ;(display "\n" out)
-        ;(display (string-append (number->string (car mat_size)) " " (number->string (cadr mat_size)) "\n") out)
-        ;(display max_size out)
-        ;(display "\n" out)
+        (write pixel_arr)
+        (display "\n")
+        (display img-type out)
+        (display "\n" out)
+        (display (string-append (number->string (car mat_size)) " " (number->string (cadr mat_size)) "\n") out)
+        (display max_size out)
+        (display "\n" out)
         (write-all-pixels writtable-pixels col_size 1 out)
-        ;(write writtable-pixels)
+        (write writtable-pixels)
         (close-output-port out)
     )
     
