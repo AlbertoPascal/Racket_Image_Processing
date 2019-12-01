@@ -62,7 +62,7 @@
 (define (add_next_bit char_bit trimmed_pixel)
     (string-append trimmed_pixel char_bit)
 )
-()
+
 ; (add_next_bit "1" (Join-chars (get_trimmed_pixel (string->list "100"))))
 
 (define (valid-encryption msg_arr pixel_arr)
@@ -110,6 +110,7 @@
     ;(write (DecToBin (char->integer character)))
     (DecToBin (char->integer character))
 )
+
 (define (prep-list sentence binary-arr)
 ;This function will receive a word or sentence, convert it into a list of characters and send char by char to its binary conversion.
 ;Function returns an array of strings containing the binary representation of each letter  
@@ -124,6 +125,7 @@
 
 )
 
+;Joins separated characters into a string
 (define (Join-chars lst)
   (apply string-append ; Here we will start appending all of our letters
          (map (lambda (e) ; I will receive each "char"
@@ -136,6 +138,8 @@
         )
     )
 )
+
+;Converts a decimal number into binary (string)
 (define (DecToBin num)
     (if (< num 2)
         (number->string num); if number is no longer divisible, I return the number. 
@@ -145,12 +149,16 @@
     )
 
 )
+
+;Adds '0's at the beggining of the number to complete 8 bit positions
 (define (format-bin-string binstring)
     (if (< (string-length binstring) 8)
         (format-bin-string (string-append "0" binstring))
         binstring
     )
 )
+
+;Convert each RGB value of each pixel into binary
 (define (convert-pixels-to-bin pixels new_pixels)
     (if (> (length pixels) 0)
         (convert-pixels-to-bin (cdr pixels) (append new_pixels (convert-list-to-bin (car pixels) '())))
@@ -159,6 +167,7 @@
     )
 )
 
+;Converts every element of a given list of numbers into binary
 (define (convert-list-to-bin elem_list new_list)
     (if (> (length elem_list) 0)
         ;(cdr elem_list)
