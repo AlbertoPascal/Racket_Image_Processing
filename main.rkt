@@ -35,9 +35,10 @@
             
         )
         
-        (if (char-iso-control? (car char_arr))
-            (write "This image has no hidden messages to decode")
+        ;(write char_arr)
+        (if (char-numeric? (car char_arr))
             (decode_list_msg (trim_decoding_list char_arr) msg_length "")
+            (write "This image has no hidden messages to decode")
         )
         
         
@@ -66,6 +67,8 @@
         (decode_list_msg (cdr full_char_list) (- msg_length 1) (string-append secret_msg (Join-chars (list (car full_char_list)))))
         secret_msg
     )
+    
+    
 )
 (define (get_last_bits pixel_arr new_pixel_arr)
     (if (> (length pixel_arr) 0) 
