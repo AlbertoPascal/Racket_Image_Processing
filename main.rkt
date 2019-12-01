@@ -4,6 +4,7 @@
             [in (open-input-file img-name)] ;we will define our input file reader
             [img_type (read-image-type in)] ; we store the image_type
             [mat_size (read-matrix-size in)] ; we store x and y coordinates from our matrix size
+            [max_value (read in)]
             [pixels (read-all-pixels in (* (car mat_size) (car (cdr mat_size))) '())]
         )
         ;(write img_type)
@@ -13,13 +14,14 @@
         ;(write pixels)
         ;(display "\n")
         (close-input-port in) 
-        (append (list img_type) (list mat_size) (list(convert-pixels-to-bin pixels '()) ) )
+        (append (list img_type) (list mat_size) (list max_value) (list(convert-pixels-to-bin pixels '()) ) )
     ;Idea: leer los parámetros de la ppm image para saber cuantos renglones y columnas hay. A partir de
     ;ahí, hacer tercias y guardar esas listas de tercias dentro de otra lista para representar la lista de pixeles.
     ;(append (read-line in)
     )
 )
-(define (encode-msg msg img-name)
+
+(define (encode-msg msg img-name output_filename)
     (let*
         (
             [init_msg_length (string-length msg)]
@@ -27,7 +29,8 @@
             [msg_arr (prep-list (string-append (~v init_msg_length) " " msg) '())]
             [img_type (car img_data)]
             [mat_size (car (cdr img_data))]
-            [pixel_arr (car (cdr (cdr img_data)))]
+            [max_size (caddr img_data)]
+            [pixel_arr (car (cdddr img_data))]
             [msg_length (* (length msg_arr) 8)]
             
         )
@@ -41,26 +44,86 @@
         ;(display "\n")
 
         (if (valid-encryption msg_arr pixel_arr)
-            (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()))
+            (write-img output_filename img_type max_size mat_size "hola" (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()) (* (car mat_size) 3))
             (write "message is too long for this image. Please try with a larger image")
         )
 
 
     )
 )
-(define (encrypt-message msg_arr pixel_arr new_pixel_arr)
-    (if (> (length msg_arr) 0)
-        ;send next letter to encryption. 
 
+(define (write-img output_filename img-type max_size mat_size img-name pixel_arr col_size)
+    (let*
+        (
+            [out (open-output-file output_filename #:exists 'truncate)]
+            [writtable-pixels (map (lambda (e) (number->string e)) (return-pixels-toDec pixel_arr '()))]
+
+        )
+        (write pixel_arr)
+        (display "\n")
+        (display img-type out)
+        (display "\n" out)
+        (display (string-append (number->string (car mat_size)) " " (number->string (cadr mat_size)) "\n") out)
+        (display max_size out)
+        (display "\n" out)
+        (write-all-pixels writtable-pixels col_size 1 out)
+        (write writtable-pixels)
+        (close-output-port out)
+    )
+    
+)
+(define (write-all-pixels pixel_arr columns curr_cols output)
+    ;(write "my curr cols is ")
+    ;(write curr_cols)
+    ;(display "\n")
+    (if (not (empty? pixel_arr))
+        (if (> curr_cols columns)
+            (display (string-append "\n" (car pixel_arr) " ") output)
+            (display (string-append (car pixel_arr) " ") output)
+        )
+        '()
+        
+    )
+    (if (> (length pixel_arr) 0)
+        (if (> curr_cols columns)
+            (write-all-pixels (cdr pixel_arr) columns 1 output)
+            (write-all-pixels (cdr pixel_arr) columns (+ curr_cols 1) output)
+        )
+        (display (string-append "\n" "Finished creating image"))
     )
 )
-(define (letter-encryption letter pixel_arr)
 
+(define (return-pixels-toDec pixel_arr final_pixel_arr)
+    (if (> (length pixel_arr) 0)
+        (return-pixels-toDec (cdr pixel_arr) (append final_pixel_arr (list (BinToDec (car pixel_arr)))))
+        final_pixel_arr
+    )
+)
+(define (encrypt-message msg_arr pixel_arr new_pixel_arr)
+    (if (> (length msg_arr) 0)
+        (encrypt-message (cdr msg_arr) (cddddr (cddddr pixel_arr)) (append new_pixel_arr (letter-encryption (car msg_arr) pixel_arr '())))
+        (append new_pixel_arr pixel_arr)
+        
+    )
+)
+(define (BinToDec numstring)
+    
+    (if (> (length (string->list numstring)) 0)
+        (+ (* (string->number (Join-chars (list (car (string->list numstring))))) (expt 2 (- (length (string->list numstring)) 1))) (BinToDec (Join-chars (cdr (string->list numstring)))))
+        0
+    )
+)
+
+(define (letter-encryption letter pixel_arr new_pixel_arr)
+    (if (> (length (string->list letter)) 0)
+       (letter-encryption (Join-chars (cdr (string->list letter))) (cdr pixel_arr) (append new_pixel_arr  (list (add_next_bit (Join-chars (list (car (string->list letter)))) (car pixel_arr)))))
+       new_pixel_arr
+    )
 )
 (define (trim_all_pixels pixel_arr needed_channels new_pixel_arr)
     (if (> needed_channels 0)
         (trim_all_pixels (cdr pixel_arr) (- needed_channels 1) (append new_pixel_arr (list (Join-chars (get_trimmed_pixel (string->list(car pixel_arr)))))))
-        new_pixel_arr
+        (append new_pixel_arr pixel_arr)
     )
 )
 (define (get_trimmed_pixel pixel)
