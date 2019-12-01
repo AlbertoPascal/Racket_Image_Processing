@@ -34,6 +34,8 @@
     (define threads (map make-thread '("Thread_A" "Thread_B" "Thread_C")))
     ; Apply a function to each element in a list, without results
     (for-each thread-wait threads)
+    ;ya acabaron, cada uno escribió en algún lado.
+
     (printf "MAIN THREAD FINISHING\n"))
 
 ;=================ENDS TESTING OF THREADS==========================
@@ -59,46 +61,40 @@
     ;(append (read-line in)
     )
 )
-(define (prep_threads arr msg)
+;This function will return the corresponding pixel arrays for 4 threads in a single list of lists.
+(define (prep_pixel_threads arr thread_num)
     (let*
         (
-            [split_size (round (/ (length arr) 4))]
-            [split_msg_size (round (/ (length (string->list msg)) 4))]
+            [split_size (round (/ (length arr) thread_num))]
         )
-
-        (write "Arr should be split in sizes of ")
-        (write split_size)
-        (display "\n")
-        (write "msg is ")
-        (write split_msg_size)
-        (display "\n")
-        (write "arr1: ")
-        (write (split-arr (n_remover arr (* split_size 0)) split_size ))
-        (display "\n")
-        (write "arr2: ")
-        (write (split-arr (n_remover arr (* split_size 1)) split_size ))
-        (display "\n")
-        (write "arr3: ")
-        (write (split-arr (n_remover arr (* split_size 2)) split_size ))
-        (display "\n")
-        (write "arr4: ")
-        (write (split-arr (n_remover arr (* split_size 3)) (length arr) )) ; This ensures I gather all of the remaining here in case
-                                                                            ;that our size is not even)
-        (display "\n")
-        (write "msg1: ")
-        (write (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size ))
-        (display "\n")
-        (write "msg2: ")
-        (write (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size ))
-        (display "\n")
-        (write "msg3: ")
-        (write (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size ))
-        (display "\n")
-        (write "msg4: ")
-        (write (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) ))
-
+        (create_pixel_arrays thread_num 0 arr split_size '())
+        ;(append (list (split-arr (n_remover arr (* split_size 0)) split_size )) (list (split-arr (n_remover arr (* split_size 1)) split_size )) (list (split-arr (n_remover arr (* split_size 2)) split_size )) (list (split-arr (n_remover arr (* split_size 3)) (length arr) )))
     )
 
+)
+(define (create_pixel_arrays thread_num curr_iter arr split_size new_pixel_list)
+    (if (> thread_num (+ curr_iter 1))
+        (create_pixel_arrays thread_num (+ curr_iter 1) arr split_size (append new_pixel_list (list (split-arr (n_remover arr (* split_size curr_iter)) split_size ))  ))
+        (append new_pixel_list (list (split-arr (n_remover arr (* split_size curr_iter)) (length arr)) ))
+    )
+)
+;This function will return the corresponding char arrays for 4 threads in a single list of lists.
+(define (prep_msg_threads msg thread_num)
+    (let*
+        (
+            [split_msg_size (round (/ (length (string->list msg)) thread_num))]
+        )
+
+        (create_msg_arrays thread_num 0 msg split_msg_size '())
+        ;(append (list (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) )) )
+    )
+
+)
+(define (create_msg_arrays thread_num curr_iter msg split_msg_size new_msg_list)
+    (if (> thread_num (+ curr_iter 1))
+        (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) split_msg_size ))))
+        (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) split_msg_size )))
+    )
 )
 ;; =============Example of usage for the following 4 functions: (split-arr (n_remover '(1 2 3 4 5 6 7 8 9) 4) 4)
 ;This will remove the first n elements from my array
@@ -217,8 +213,8 @@
         ;(display "\n")
         ;(write mat_size)
         ;(display "\n")
-        ;(write pixel_arr)
-        ;(display "\n")
+        (write pixel_arr)
+        (display "\n")
         
         ;Posiblemente aquí tengamos que decir... si el mensaje cabe en la imagen completa, divide en threads.
         (if (valid-encryption msg_arr pixel_arr) 
@@ -229,6 +225,45 @@
 
     )
 )
+
+; ==========TEMPORAL=================
+(define (encode-msg2 msg img-name output_filename thread_num)
+    (let*
+        (
+            [init_msg_length (string-length msg)]
+            [img_data (read-image img-name)]
+            [msg_arr (prep-list (string-append (~v init_msg_length) " " msg) '())]
+            [img_type (car img_data)]
+            [mat_size (car (cdr img_data))]
+            [max_size (caddr img_data)]
+            [pixel_arr (car (cdddr img_data))]
+            [msg_length (* (length msg_arr) 8)]
+            [thread_pixel_arr (prep_pixel_threads pixel_arr thread_num)]
+            [thread_msg_arr (prep_msg_threads msg thread_num)]
+            
+        )
+        ;(write msg_arr)
+        ;(display "\n")
+        ;(write img_type)
+        ;(display "\n")
+        ;(write mat_size)
+        ;(display "\n")
+        (write thread_pixel_arr)
+        (display "\n")
+        (write thread_msg_arr)
+        (display "\n")
+        
+        ;Posiblemente aquí tengamos que decir... si el mensaje cabe en la imagen completa, divide en threads.
+        (if (valid-encryption msg_arr pixel_arr) 
+            (write "ok")
+            ;(write-img output_filename img_type max_size mat_size (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()) (* (car mat_size) 3))
+            (write "message is too long for this image. Please try with a larger image")
+        )
+
+
+    )
+)
+;============================
 
 (define (write-img output_filename img-type max_size mat_size pixel_arr col_size)
     (let*
