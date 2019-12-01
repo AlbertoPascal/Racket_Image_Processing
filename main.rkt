@@ -22,6 +22,77 @@
     ;(append (read-line in)
     )
 )
+(define (prep_threads arr msg)
+    (let*
+        (
+            [split_size (round (/ (length arr) 4))]
+            [split_msg_size (round (/ (length (string->list msg)) 4))]
+        )
+
+        (write "Arr should be split in sizes of ")
+        (write split_size)
+        (display "\n")
+        (write "msg is ")
+        (write split_msg_size)
+        (display "\n")
+        (write "arr1: ")
+        (write (split-arr (n_remover arr (* split_size 0)) split_size ))
+        (display "\n")
+        (write "arr2: ")
+        (write (split-arr (n_remover arr (* split_size 1)) split_size ))
+        (display "\n")
+        (write "arr3: ")
+        (write (split-arr (n_remover arr (* split_size 2)) split_size ))
+        (display "\n")
+        (write "arr4: ")
+        (write (split-arr (n_remover arr (* split_size 3)) (length arr) )) ; This ensures I gather all of the remaining here in case
+                                                                            ;that our size is not even)
+        (display "\n")
+        (write "msg1: ")
+        (write (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size ))
+        (display "\n")
+        (write "msg2: ")
+        (write (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size ))
+        (display "\n")
+        (write "msg3: ")
+        (write (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size ))
+        (display "\n")
+        (write "msg4: ")
+        (write (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) ))
+
+    )
+
+)
+;; =============Example of usage for the following 4 functions: (split-arr (n_remover '(1 2 3 4 5 6 7 8 9) 4) 4)
+;This will remove the first n elements from my array
+(define (n_remover arr nums_to_remove)
+    (n_remover_helper arr 0 nums_to_remove)
+)
+;This does the process of removing one by one the elements at the beginning of the list
+(define (n_remover_helper arr curr_count elems_to_remove)
+    (if (empty? arr)
+        arr
+        (if (> elems_to_remove curr_count)
+        (n_remover_helper (cdr arr) (+ curr_count 1) elems_to_remove)
+        arr
+        )
+    )
+)
+;this will give me the first n elements of the array. 
+(define (split-arr arr desired_elems)
+    (split_helper arr 0 desired_elems '())
+)
+;This will do the process of fetching the first n elements of my array
+(define (split_helper arr curr_count max_count new_arrs)
+    (if (empty? arr)
+        new_arrs
+        (if (> max_count curr_count) 
+            (split_helper (cdr arr) (+ curr_count 1) max_count (append new_arrs (list (car arr))))
+            new_arrs
+        )
+    )
+        
+)
 (define (decode-msg img-input msg)
     (let*
         (
@@ -111,9 +182,10 @@
         ;(display "\n")
         ;(write pixel_arr)
         ;(display "\n")
-
-        (if (valid-encryption msg_arr pixel_arr)
-            (write-img output_filename img_type max_size mat_size "hola" (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()) (* (car mat_size) 3))
+        
+        ;Posiblemente aquí tengamos que decir... si el mensaje cabe en la imagen completa, divide en threads.
+        (if (valid-encryption msg_arr pixel_arr) 
+            (write-img output_filename img_type max_size mat_size (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()) (* (car mat_size) 3))
             (write "message is too long for this image. Please try with a larger image")
         )
 
@@ -121,7 +193,7 @@
     )
 )
 
-(define (write-img output_filename img-type max_size mat_size img-name pixel_arr col_size)
+(define (write-img output_filename img-type max_size mat_size pixel_arr col_size)
     (let*
         (
             [out (open-output-file output_filename #:exists 'truncate)]
