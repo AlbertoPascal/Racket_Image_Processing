@@ -1,56 +1,5 @@
 ;NOTE: MAIN FUNCTIONS ARE (encode-msg msg input-ppm output-ppm) and (decode-msg "input-ppm" "")
 
-
-;===============TESTING OF THREADS =============================
-
-; Create a new semaphore
-(define semaphore-out (make-semaphore 1))
-(define channel-out (make-channel))
-(define x '())
-; Function to create new threads
-(define (make-thread name thread_pixel_arr thread_msg_arr)
-    (thread (lambda ()
-                (let*
-                    ([curr_thread_pixel (n_remover thread_pixel_arr name)]
-                     [curr_thread_msg (n_remover thread_msg_arr name)]
-                     [encrypted_msg (encrypt-message (car curr_thread_msg) (trim_all_pixels (car curr_thread_pixel) (* (length (car curr_thread_msg)) 8) '()) '())]
-                    )
-                        ;(write thread_msg_arr)
-                        ;(display "\n")
-                        (write "I am thread ")
-                        (write name)
-                        (display "\n")
-                        (write (car curr_thread_pixel))
-                        (display "\n")
-                        (write (length (car curr_thread_pixel)))
-                        (display "\n")
-                        ;(printf "Thread ~a finishing\n" name)
-                        ;(write name)
-                        ;(display "\n")
-                        (write (car curr_thread_msg))
-                        (display "\n")
-                        
-                        (write (* (length (car curr_thread_msg)) 8))
-                        (display "\n")
-                        ;(set! x (append x curr_thread_msg))
-                        (set! x (append x (list (append (list name) encrypt-message))))
-                )
-                 (list name)
-             )
-    )
-)
-
-; Main function to test
-(define (main)
-    (printf "MAIN THREAD START\n")
-    (define threads (map make-thread '("Thread_A" "Thread_B" "Thread_C")))
-    ; Apply a function to each element in a list, without results
-    (for-each thread-wait threads)
-    ;ya acabaron, cada uno escribió en algún lado.
-
-    (printf "MAIN THREAD FINISHING\n"))
-
-;=================ENDS TESTING OF THREADS==========================
 (define (read-image img-name)
     (let*
         (
@@ -73,74 +22,7 @@
     ;(append (read-line in)
     )
 )
-;This function will return the corresponding pixel arrays for 4 threads in a single list of lists.
-(define (prep_pixel_threads arr thread_num)
-    (let*
-        (
-            [split_size (round (/ (length arr) thread_num))]
-        )
-        (create_pixel_arrays thread_num 0 arr split_size '())
-        ;(append (list (split-arr (n_remover arr (* split_size 0)) split_size )) (list (split-arr (n_remover arr (* split_size 1)) split_size )) (list (split-arr (n_remover arr (* split_size 2)) split_size )) (list (split-arr (n_remover arr (* split_size 3)) (length arr) )))
-    )
 
-)
-(define (create_pixel_arrays thread_num curr_iter arr split_size new_pixel_list)
-    (if (> thread_num (+ curr_iter 1))
-        (create_pixel_arrays thread_num (+ curr_iter 1) arr split_size (append new_pixel_list (list (split-arr (n_remover arr (* split_size curr_iter)) split_size ))  ))
-        (append new_pixel_list (list (split-arr (n_remover arr (* split_size curr_iter)) (length arr)) ))
-    )
-)
-;This function will return the corresponding char arrays for 4 threads in a single list of lists.
-(define (prep_msg_threads msg thread_num)
-    (let*
-        (
-            [split_msg_size (round (/ (length (string->list msg)) thread_num))]
-        )
-
-        (create_msg_arrays thread_num 0 msg split_msg_size '())
-        ;(append (list (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) )) )
-    )
-
-)
-(define (create_msg_arrays thread_num curr_iter msg split_msg_size new_msg_list)
-    (if (> thread_num (+ curr_iter 1))
-        (if (= curr_iter 0)
-            (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) (- split_msg_size 1) ))))
-            (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (- (* split_msg_size curr_iter) 1)) (+ split_msg_size 1)))))
-        )
-        (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) (length (string->list msg)) )))
-    )
-)
-;; =============Example of usage for the following 4 functions: (split-arr (n_remover '(1 2 3 4 5 6 7 8 9) 4) 4)
-;This will remove the first n elements from my array
-(define (n_remover arr nums_to_remove)
-    (n_remover_helper arr 0 nums_to_remove)
-)
-;This does the process of removing one by one the elements at the beginning of the list
-(define (n_remover_helper arr curr_count elems_to_remove)
-    (if (empty? arr)
-        arr
-        (if (> elems_to_remove curr_count)
-        (n_remover_helper (cdr arr) (+ curr_count 1) elems_to_remove)
-        arr
-        )
-    )
-)
-;this will give me the first n elements of the array. 
-(define (split-arr arr desired_elems)
-    (split_helper arr 0 desired_elems '())
-)
-;This will do the process of fetching the first n elements of my array
-(define (split_helper arr curr_count max_count new_arrs)
-    (if (empty? arr)
-        new_arrs
-        (if (> max_count curr_count) 
-            (split_helper (cdr arr) (+ curr_count 1) max_count (append new_arrs (list (car arr))))
-            new_arrs
-        )
-    )
-        
-)
 (define (decode-msg img-input msg)
     (let*
         (
@@ -286,30 +168,7 @@
 
     )
 )
-(define (prep-all-charparts thread_msg_arr new_thread_msg_arr iter)
-    (if (> (length thread_msg_arr) 0)
-        (if (= iter 0)
-            (prep-all-charparts (cdr thread_msg_arr) (append new_thread_msg_arr (list (prep-list (string-append (number->string (length (car thread_msg_arr))) " " (Join-chars (car thread_msg_arr))) '()))) (+ iter 1))
-            (prep-all-charparts (cdr thread_msg_arr) (append new_thread_msg_arr (list (prep-list (Join-chars (car thread_msg_arr)) '()))) (+ iter 1))
-        )
-        new_thread_msg_arr
-    )
-)
-(define (send_thread_operations thread_pixel_arr thread_msg_arr thread_num)
-   ; (write (car thread_msg_arr))
-    (define threads (map (curryr make-thread thread_pixel_arr thread_msg_arr) (range 0 thread_num)))
-    (for-each thread-wait threads)
-    (append threads)
-    (write x) 
-)
-(define (create-thread current_thread thread_pixel_arr thread_msg_arr thread_msg_length)
-    (define thread (thread-function current_thread thread_pixel_arr thread_msg_arr thread_msg_length))
-    (append thread)
-)
-;============================
-(define (thread-function thread_num thread_pixel_arr thread_msg_arr thread_msg_length)
-   (append (list thread_num) (encrypt-message thread_msg_arr (trim_all_pixels thread_pixel_arr thread_msg_length '()) '()))
-)
+
 (define (write-img output_filename img-type max_size mat_size pixel_arr col_size)
     (let*
         (
