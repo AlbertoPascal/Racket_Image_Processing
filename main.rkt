@@ -5,6 +5,7 @@
 
 ; Create a new semaphore
 (define semaphore-out (make-semaphore 1))
+(define channel-out (make-channel))
 (define x '())
 ; Function to create new threads
 (define (make-thread name thread_pixel_arr thread_msg_arr)
@@ -12,7 +13,7 @@
                 (let*
                     ([curr_thread_pixel (n_remover thread_pixel_arr name)]
                      [curr_thread_msg (n_remover thread_msg_arr name)]
-                     ;[encrypted_msg (encrypt-message (car curr_thread_msg) (trim_all_pixels (car curr_thread_pixel) (* (length (car curr_thread_msg)) 8) '()) '())]
+                     [encrypted_msg (encrypt-message (car curr_thread_msg) (trim_all_pixels (car curr_thread_pixel) (* (length (car curr_thread_msg)) 8) '()) '())]
                     )
                         ;(write thread_msg_arr)
                         ;(display "\n")
@@ -31,8 +32,8 @@
                         
                         (write (* (length (car curr_thread_msg)) 8))
                         (display "\n")
-                        (set! x (append x curr_thread_msg))
-                        ;(set! x (append x (list (append (list name) encrypt-message))))
+                        ;(set! x (append x curr_thread_msg))
+                        (set! x (append x (list (append (list name) encrypt-message))))
                 )
                  (list name)
              )
@@ -103,7 +104,10 @@
 )
 (define (create_msg_arrays thread_num curr_iter msg split_msg_size new_msg_list)
     (if (> thread_num (+ curr_iter 1))
-        (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) split_msg_size ))))
+        (if (= curr_iter 0)
+            (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) (- split_msg_size 1) ))))
+            (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (- (* split_msg_size curr_iter) 1)) (+ split_msg_size 1)))))
+        )
         (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) (length (string->list msg)) )))
     )
 )
@@ -253,13 +257,12 @@
             [pixel_arr (car (cdddr img_data))]
             [msg_length (* (length msg_arr) 8)]
             [thread_pixel_arr (prep_pixel_threads pixel_arr thread_num)]
-            [thread_msg_arr (prep-all-charparts (prep_msg_threads msg thread_num) '())]
-            [thread_msg_arr2 (prep_msg_threads msg thread_num)]
+            [thread_msg_arr (prep-all-charparts (prep_msg_threads msg thread_num) '() 0)]
+            
             
         )
         (set! x '())
-        (write thread_msg_arr2)
-        (display "\n")
+   
         ;(write msg_length)
         ;(display "\n")
         ;(write mat_size)
@@ -283,9 +286,12 @@
 
     )
 )
-(define (prep-all-charparts thread_msg_arr new_thread_msg_arr)
+(define (prep-all-charparts thread_msg_arr new_thread_msg_arr iter)
     (if (> (length thread_msg_arr) 0)
-        (prep-all-charparts (cdr thread_msg_arr) (append new_thread_msg_arr (list (prep-list (string-append (number->string (length (car thread_msg_arr))) " " (Join-chars (car thread_msg_arr))) '()))))
+        (if (= iter 0)
+            (prep-all-charparts (cdr thread_msg_arr) (append new_thread_msg_arr (list (prep-list (string-append (number->string (length (car thread_msg_arr))) " " (Join-chars (car thread_msg_arr))) '()))) (+ iter 1))
+            (prep-all-charparts (cdr thread_msg_arr) (append new_thread_msg_arr (list (prep-list (Join-chars (car thread_msg_arr)) '()))) (+ iter 1))
+        )
         new_thread_msg_arr
     )
 )
