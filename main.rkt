@@ -9,17 +9,8 @@
             [max_value (read in)]
             [pixels (read-all-pixels in (* (car mat_size) (car (cdr mat_size))) '())]
         )
-        ;(write img_type)
-        ;(display "\n")
-        ;(write mat_size)
-        ;(display "\n")
-        ;(write pixels)
-        ;(display "\n")
         (close-input-port in) 
         (append (list img_type) (list mat_size) (list max_value) (list(convert-pixels-to-bin pixels '()) ) )
-    ;Idea: leer los parámetros de la ppm image para saber cuantos renglones y columnas hay. A partir de
-    ;ahí, hacer tercias y guardar esas listas de tercias dentro de otra lista para representar la lista de pixeles.
-    ;(append (read-line in)
     )
 )
 
@@ -35,8 +26,6 @@
             [msg_length (string->number (get_msg_length char_arr ""))]
             
         )
-        ;(display "soy el main decode \n")
-        ;(write char_arr)
         (if (char-numeric? (car char_arr))
             (decode_list_msg (trim_decoding_list char_arr) msg_length "")
             (write "This image has no hidden messages to decode")
@@ -52,15 +41,13 @@
     )
 )
 (define (get_msg_length char_arr len)
-    ;(write char_arr)
     (if (or (empty? char_arr) (string=? (Join-chars (list (car char_arr)) ) " "))
         len
         (get_msg_length (cdr char_arr) (string-append len (Join-chars(list (car char_arr)))))
     )
 )
 (define (trim_decoding_list char_list)
-    ;(display "soy el trim_decoding_list\n" )
-    ;(write char_list)
+
     (if (string=? (Join-chars (list (car char_list)) ) " ")
         (cdr char_list)
         (trim_decoding_list (cdr char_list))
@@ -107,15 +94,7 @@
             [msg_length (* (length msg_arr) 8)]
             
         )
-        ;(write msg_arr)
-        ;(display "\n")
-        ;(write img_type)
-        ;(display "\n")
-        ;(write mat_size)
-        ;(display "\n")
-        (write pixel_arr)
-        (display "\n")
-        
+     
         ;Posiblemente aquí tengamos que decir... si el mensaje cabe en la imagen completa, divide en threads.
         (if (valid-encryption msg_arr pixel_arr) 
             (write-img output_filename img_type max_size mat_size (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()) (* (car mat_size) 3))
@@ -253,8 +232,6 @@
     (string-append trimmed_pixel char_bit)
 )
 
-; (add_next_bit "1" (Join-chars (get_trimmed_pixel (string->list "100"))))
-
 (define (valid-encryption msg_arr pixel_arr)
     (let*
         (
@@ -304,7 +281,6 @@
 (define (prep-list sentence binary-arr)
 ;This function will receive a word or sentence, convert it into a list of characters and send char by char to its binary conversion.
 ;Function returns an array of strings containing the binary representation of each letter  
-    ;(write sentence)
     (if (> (string-length sentence) 0)
         ;If I still have letters, I will return the letter's binary component.
         (prep-list (Join-chars (cdr (string->list sentence))) (append binary-arr (list (format-bin-string (char-bin (car (string->list sentence)))))))
@@ -360,7 +336,6 @@
 ;Converts every element of a given list of numbers into binary
 (define (convert-list-to-bin elem_list new_list)
     (if (> (length elem_list) 0)
-        ;(cdr elem_list)
         (convert-list-to-bin (cdr elem_list) (append new_list (list (format-bin-string (DecToBin (car elem_list))))))
         new_list
     )
