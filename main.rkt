@@ -5,28 +5,39 @@
 
 ; Create a new semaphore
 (define semaphore-out (make-semaphore 1))
-
+(define x '())
 ; Function to create new threads
-(define (make-thread name)
+(define (make-thread name thread_pixel_arr thread_msg_arr)
     (thread (lambda ()
-             (let loop
-                ([n 0])
-                (if (< n 10)
-                    ; true
-                    (begin
-                        (sleep (random))
-                        (semaphore-wait semaphore-out)
-                        ; Critical section
+                (let*
+                    ([curr_thread_pixel (n_remover thread_pixel_arr name)]
+                     [curr_thread_msg (n_remover thread_msg_arr name)]
+                     ;[encrypted_msg (encrypt-message (car curr_thread_msg) (trim_all_pixels (car curr_thread_pixel) (* (length (car curr_thread_msg)) 8) '()) '())]
+                    )
+                        ;(write thread_msg_arr)
+                        ;(display "\n")
+                        (write "I am thread ")
                         (write name)
                         (display "\n")
-                        (encode-msg "h" "input.txt" (string-append name "output" (number->string n) ".ppm") )
+                        (write (car curr_thread_pixel))
                         (display "\n")
-                        ;(printf "Thread: ~a | Counter: ~a\n" name n)
-                        ;(printf "~a_~a " name n)
-                        (semaphore-post semaphore-out)
-                        (loop (+ n 1)))
-                    ; false
-                    (printf "Thread ~a finishing\n" name))))))
+                        (write (length (car curr_thread_pixel)))
+                        (display "\n")
+                        ;(printf "Thread ~a finishing\n" name)
+                        ;(write name)
+                        ;(display "\n")
+                        (write (car curr_thread_msg))
+                        (display "\n")
+                        
+                        (write (* (length (car curr_thread_msg)) 8))
+                        (display "\n")
+                        (set! x (append x curr_thread_msg))
+                        ;(set! x (append x (list (append (list name) encrypt-message))))
+                )
+                 (list name)
+             )
+    )
+)
 
 ; Main function to test
 (define (main)
@@ -67,12 +78,10 @@
         (
             [split_size (round (/ (length arr) thread_num))]
         )
-        (if (> split_size 1)
-            (create_pixel_arrays thread_num 0 arr split_size '())
-            ;(append (list (split-arr (n_remover arr (* split_size 0)) split_size )) (list (split-arr (n_remover arr (* split_size 1)) split_size )) (list (split-arr (n_remover arr (* split_size 2)) split_size )) (list (split-arr (n_remover arr (* split_size 3)) (length arr) )))
-            (create_pixel_arrays thread_num 0 arr 1 '())
-        )
+        (create_pixel_arrays thread_num 0 arr split_size '())
+        ;(append (list (split-arr (n_remover arr (* split_size 0)) split_size )) (list (split-arr (n_remover arr (* split_size 1)) split_size )) (list (split-arr (n_remover arr (* split_size 2)) split_size )) (list (split-arr (n_remover arr (* split_size 3)) (length arr) )))
     )
+
 )
 (define (create_pixel_arrays thread_num curr_iter arr split_size new_pixel_list)
     (if (> thread_num (+ curr_iter 1))
@@ -87,18 +96,15 @@
             [split_msg_size (round (/ (length (string->list msg)) thread_num))]
         )
 
-        (if (> split_msg_size 1)
-            (create_msg_arrays thread_num 0 msg split_msg_size '())
-            ;(append (list (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) )) )
-            (create_msg_arrays thread_num 0 msg 1 '())
-        )
+        (create_msg_arrays thread_num 0 msg split_msg_size '())
+        ;(append (list (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) )) )
     )
 
 )
 (define (create_msg_arrays thread_num curr_iter msg split_msg_size new_msg_list)
     (if (> thread_num (+ curr_iter 1))
         (create_msg_arrays thread_num (+ curr_iter 1) msg split_msg_size (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) split_msg_size ))))
-        (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) split_msg_size )))
+        (append new_msg_list (list (split-arr (n_remover (string->list msg) (* split_msg_size curr_iter)) (length (string->list msg)) )))
     )
 )
 ;; =============Example of usage for the following 4 functions: (split-arr (n_remover '(1 2 3 4 5 6 7 8 9) 4) 4)
@@ -140,10 +146,10 @@
             [max_size (caddr img_data)]
             [pixel_arr (car (cdddr img_data))]
             [char_arr (convert-ascii-char (return-pixels-toDec (remake-all-letters (get_last_bits pixel_arr '()) '()) '()) '())]
-            [msg_length (string->number (Join-chars (list (car char_arr))))]
+            [msg_length (string->number (get_msg_length char_arr ""))]
             
         )
-        
+        ;(display "soy el main decode \n")
         ;(write char_arr)
         (if (char-numeric? (car char_arr))
             (decode_list_msg (trim_decoding_list char_arr) msg_length "")
@@ -160,12 +166,15 @@
     )
 )
 (define (get_msg_length char_arr len)
+    ;(write char_arr)
     (if (or (empty? char_arr) (string=? (Join-chars (list (car char_arr)) ) " "))
-        (Join-chars len)
+        len
         (get_msg_length (cdr char_arr) (string-append len (Join-chars(list (car char_arr)))))
     )
 )
 (define (trim_decoding_list char_list)
+    ;(display "soy el trim_decoding_list\n" )
+    ;(write char_list)
     (if (string=? (Join-chars (list (car char_list)) ) " ")
         (cdr char_list)
         (trim_decoding_list (cdr char_list))
@@ -244,23 +253,29 @@
             [pixel_arr (car (cdddr img_data))]
             [msg_length (* (length msg_arr) 8)]
             [thread_pixel_arr (prep_pixel_threads pixel_arr thread_num)]
-            [thread_msg_arr (prep_msg_threads msg thread_num)]
+            [thread_msg_arr (prep-all-charparts (prep_msg_threads msg thread_num) '())]
+            [thread_msg_arr2 (prep_msg_threads msg thread_num)]
             
         )
-        ;(write msg_arr)
-        ;(display "\n")
-        ;(write img_type)
+        (set! x '())
+        (write thread_msg_arr2)
+        (display "\n")
+        ;(write msg_length)
         ;(display "\n")
         ;(write mat_size)
         ;(display "\n")
-        (write thread_pixel_arr)
-        (display "\n")
         (write thread_msg_arr)
         (display "\n")
+        ;(write (* (length msg_arr) 8))
+       ; (write thread_pixel_arr)
+        ;(display "\n")
+        ;(write thread_msg_arr)
+        ;(display "\n")
         
         ;Posiblemente aquí tengamos que decir... si el mensaje cabe en la imagen completa, divide en threads.
         (if (valid-encryption msg_arr pixel_arr) 
-            (write "ok")
+            (send_thread_operations thread_pixel_arr thread_msg_arr thread_num)
+            ;(write (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()))
             ;(write-img output_filename img_type max_size mat_size (encrypt-message msg_arr (trim_all_pixels pixel_arr msg_length '()) '()) (* (car mat_size) 3))
             (write "message is too long for this image. Please try with a larger image")
         )
@@ -268,8 +283,27 @@
 
     )
 )
+(define (prep-all-charparts thread_msg_arr new_thread_msg_arr)
+    (if (> (length thread_msg_arr) 0)
+        (prep-all-charparts (cdr thread_msg_arr) (append new_thread_msg_arr (list (prep-list (string-append (number->string (length (car thread_msg_arr))) " " (Join-chars (car thread_msg_arr))) '()))))
+        new_thread_msg_arr
+    )
+)
+(define (send_thread_operations thread_pixel_arr thread_msg_arr thread_num)
+   ; (write (car thread_msg_arr))
+    (define threads (map (curryr make-thread thread_pixel_arr thread_msg_arr) (range 0 thread_num)))
+    (for-each thread-wait threads)
+    (append threads)
+    (write x) 
+)
+(define (create-thread current_thread thread_pixel_arr thread_msg_arr thread_msg_length)
+    (define thread (thread-function current_thread thread_pixel_arr thread_msg_arr thread_msg_length))
+    (append thread)
+)
 ;============================
-
+(define (thread-function thread_num thread_pixel_arr thread_msg_arr thread_msg_length)
+   (append (list thread_num) (encrypt-message thread_msg_arr (trim_all_pixels thread_pixel_arr thread_msg_length '()) '()))
+)
 (define (write-img output_filename img-type max_size mat_size pixel_arr col_size)
     (let*
         (
