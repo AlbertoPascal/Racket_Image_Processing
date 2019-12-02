@@ -87,8 +87,11 @@
             [split_msg_size (round (/ (length (string->list msg)) thread_num))]
         )
 
-        (create_msg_arrays thread_num 0 msg split_msg_size '())
-        ;(append (list (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) )) )
+        (if (> split_msg_size 1)
+            (create_msg_arrays thread_num 0 msg split_msg_size '())
+            ;(append (list (split-arr (n_remover (string->list msg) (* split_msg_size 0)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 1)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 2)) split_msg_size )) (list (split-arr (n_remover (string->list msg) (* split_msg_size 3)) (length (string->list msg)) )) )
+            (create_msg_arrays thread_num 0 msg 1 '())
+        )
     )
 
 )
