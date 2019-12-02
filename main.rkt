@@ -67,10 +67,12 @@
         (
             [split_size (round (/ (length arr) thread_num))]
         )
-        (create_pixel_arrays thread_num 0 arr split_size '())
-        ;(append (list (split-arr (n_remover arr (* split_size 0)) split_size )) (list (split-arr (n_remover arr (* split_size 1)) split_size )) (list (split-arr (n_remover arr (* split_size 2)) split_size )) (list (split-arr (n_remover arr (* split_size 3)) (length arr) )))
+        (if (> split_size 1)
+            (create_pixel_arrays thread_num 0 arr split_size '())
+            ;(append (list (split-arr (n_remover arr (* split_size 0)) split_size )) (list (split-arr (n_remover arr (* split_size 1)) split_size )) (list (split-arr (n_remover arr (* split_size 2)) split_size )) (list (split-arr (n_remover arr (* split_size 3)) (length arr) )))
+            (create_pixel_arrays thread_num 0 arr 1 '())
+        )
     )
-
 )
 (define (create_pixel_arrays thread_num curr_iter arr split_size new_pixel_list)
     (if (> thread_num (+ curr_iter 1))
